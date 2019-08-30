@@ -32,6 +32,7 @@ namespace ConsistentApiResponseErrors.Filters
         {
             if (context == null || context.ActionArguments == null)
             {
+                // Console Log (+++)
                 return;
             }
 
@@ -41,12 +42,14 @@ namespace ConsistentApiResponseErrors.Filters
             {
                 if (ActionArgument.Value == null)
                 {
+                    // Console Log (+++)
                     continue;
                 }
 
                 IValidator validator = _validatorFactory.GetValidator(ActionArgument.Value.GetType());
                 if (validator == null)
                 {
+                    // Console Log (+++)
                     continue;
                 }
 
