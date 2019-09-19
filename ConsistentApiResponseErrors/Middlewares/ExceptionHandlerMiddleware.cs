@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace ConsistentApiResponseErrors.Middlewares
 {
     /// <summary>
-    /// Central error/exception handler Middleware
+    /// Central error/exception handler Middle-ware
     /// </summary>
     public class ExceptionHandlerMiddleware
     {
@@ -55,7 +55,7 @@ namespace ConsistentApiResponseErrors.Middlewares
                 //var httpStatusCode = ConfigurateExceptionTypes(exception);
                 var httpStatusCode = apiException.StatusCode;
 
-                // Set http status code and content type
+                // Set HTTP status code and content type
                 context.Response.StatusCode = httpStatusCode;
                 context.Response.ContentType = JsonContentType;
 

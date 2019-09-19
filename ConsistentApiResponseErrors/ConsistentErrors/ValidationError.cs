@@ -36,7 +36,7 @@ namespace ConsistentApiResponseErrors.ConsistentErrors
             {
                 Code = string.Empty;
                 Field = string.Empty;
-                AttemptedValue = string.Empty;
+                AttemptedValue = null;
                 Message = string.Empty;
                 HelpURL = string.Empty;
             }
