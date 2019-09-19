@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <Authors>ikyriakidis</Authors>
     <Company>ikyriakidis</Company>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
