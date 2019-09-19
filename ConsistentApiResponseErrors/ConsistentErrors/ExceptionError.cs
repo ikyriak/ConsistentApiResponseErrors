@@ -11,7 +11,7 @@ namespace ConsistentApiResponseErrors.ConsistentErrors
     {
         public ExceptionError(Exception exception, string TraceId)
         {
-            // Exception type To Http Status configuration 
+            // Exception type To HTTP Status configuration 
             switch (exception)
             {
                 case ApiBaseException apiException when exception is ApiBaseException:

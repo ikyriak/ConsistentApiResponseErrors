@@ -16,7 +16,7 @@ namespace ConsistentApiResponseErrors.xUnit.ApplicationServices.Validators
                     .WithMessage("The {Id} does not contain value")
                 .GreaterThanOrEqualTo(1)
                     .WithErrorCode("bad_format")
-                    .WithMessage("{Id} should have a value greatet than zero (0)");
+                    .WithMessage("{Id} should have a value greater than zero (0)");
 
             //RuleFor(x => x.Message)
             //    .NotEmpty()

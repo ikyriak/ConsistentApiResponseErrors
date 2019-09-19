@@ -3,7 +3,7 @@
 namespace ConsistentApiResponseErrors.Exceptions
 {
     /// <summary>
-    /// Business Login Exceptions, mapped with http error codes to be used at thr API layer
+    /// Business Login Exceptions, mapped with HTTP error codes to be used at the API layer
     /// </summary>
     [Serializable]
     public class ApiBaseException : Exception
