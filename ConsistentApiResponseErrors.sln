@@ -5,7 +5,12 @@ VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsistentApiResponseErrors", "ConsistentApiResponseErrors\ConsistentApiResponseErrors.csproj", "{EC9D3DD6-A8F0-496E-8E76-EF9087A4E876}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsistentApiResponseErrors.xUnit", "ConsistentApiResponseErrors.xUnit\ConsistentApiResponseErrors.xUnit.csproj", "{44E08CAA-B783-4777-B420-7F9A24A39886}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsistentApiResponseErrors.xUnit", "ConsistentApiResponseErrors.xUnit\ConsistentApiResponseErrors.xUnit.csproj", "{44E08CAA-B783-4777-B420-7F9A24A39886}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{083C0758-4856-4299-8D4D-331B62F08EFE}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
