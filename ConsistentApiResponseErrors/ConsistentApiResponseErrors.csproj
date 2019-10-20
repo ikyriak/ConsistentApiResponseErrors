@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <Authors>ikyriakidis</Authors>
-    <Company>ikyriakidis</Company>
-    <Version>1.0.1</Version>
+    <Authors>Ioannis Kyriakidis</Authors>
+    <Company>ikyriakidis.com</Company>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
