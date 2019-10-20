@@ -4,6 +4,12 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <Authors>Ioannis Kyriakidis</Authors>
+
+    <Company>ikyriakidis.com</Company>
+
+    <Description>A Unit Test project (using xunit) for the ConsistentApiResponseErrors project</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ConsistentApiResponseErrors\ConsistentApiResponseErrors.csproj" />
+    <ProjectReference Include="..\src\ConsistentApiResponseErrors.csproj" />
   </ItemGroup>
 
 </Project>
