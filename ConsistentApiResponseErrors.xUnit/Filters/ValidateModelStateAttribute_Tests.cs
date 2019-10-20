@@ -12,11 +12,26 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using ConsistentApiResponseErrors.xUnit.ApplicationServices.DTOs;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ConsistentApiResponseErrors.xUnit.Filters
 {
     public class ValidateModelStateAttribute_Tests
     {
+        private readonly ILogger<ValidateModelStateAttribute> _logger;
+
+        public ValidateModelStateAttribute_Tests()
+        {
+            // Show the logs for Debug:
+            IServiceCollection serviceCollection = new ServiceCollection();
+            serviceCollection.AddLogging(builder => builder
+                .AddDebug()
+            );
+            var factory = serviceCollection.BuildServiceProvider().GetService<ILoggerFactory>();
+            _logger = factory.CreateLogger<ValidateModelStateAttribute>();
+        }
+
         /// <summary>
         /// Result to BadRequest: Response in case of a non valid request (based on model state and fluent validator)
         /// </summary>
@@ -44,7 +59,7 @@ namespace ConsistentApiResponseErrors.xUnit.Filters
             // Prepare the IValidatorFactory with the RequestModelBasicValidator
             var mockValidatorFactory = new Mock<IValidatorFactory>();
             mockValidatorFactory.Setup(vm => vm.GetValidator(typeof(RequestModelBasic))).Returns(new RequestModelBasicValidator());
-            var validateModelStateAttribute = new ValidateModelStateAttribute(mockValidatorFactory.Object);
+            var validateModelStateAttribute = new ValidateModelStateAttribute(mockValidatorFactory.Object, _logger);
 
             // Act
             validateModelStateAttribute.OnActionExecuting(actionExecutingContext);
@@ -82,7 +97,7 @@ namespace ConsistentApiResponseErrors.xUnit.Filters
             // Prepare the IValidatorFactory with the RequestModelBasicValidator
             var mockValidatorFactory = new Mock<IValidatorFactory>();
             mockValidatorFactory.Setup(vm => vm.GetValidator(typeof(RequestModelBasic))).Returns(new RequestModelBasicValidator());
-            var validateModelStateAttribute = new ValidateModelStateAttribute(mockValidatorFactory.Object);
+            var validateModelStateAttribute = new ValidateModelStateAttribute(mockValidatorFactory.Object, _logger);
 
             // Act
             validateModelStateAttribute.OnActionExecuting(actionExecutingContext);
@@ -119,7 +134,7 @@ namespace ConsistentApiResponseErrors.xUnit.Filters
             // Prepare the IValidatorFactory with the RequestModelBasicValidator
             var mockValidatorFactory = new Mock<IValidatorFactory>();
             mockValidatorFactory.Setup(vm => vm.GetValidator(typeof(RequestModelBasic))).Returns(new RequestModelBasicValidator());
-            var validateModelStateAttribute = new ValidateModelStateAttribute(mockValidatorFactory.Object);
+            var validateModelStateAttribute = new ValidateModelStateAttribute(mockValidatorFactory.Object, _logger);
 
             // Act
             validateModelStateAttribute.OnActionExecuting(actionExecutingContext);
@@ -141,13 +156,13 @@ namespace ConsistentApiResponseErrors.xUnit.Filters
             // Prepare the IValidatorFactory with the RequestModelBasicValidator
             var mockValidatorFactory = new Mock<IValidatorFactory>();
             mockValidatorFactory.Setup(vm => vm.GetValidator(typeof(RequestModelBasic))).Returns(new RequestModelBasicValidator());
-            var validateModelStateAttribute = new ValidateModelStateAttribute(mockValidatorFactory.Object);
+            var validateModelStateAttribute = new ValidateModelStateAttribute(mockValidatorFactory.Object, _logger);
 
             // Act & Assert (Exception is thrown)
             var ex = Assert.Throws<Exception>(() => validateModelStateAttribute.OnActionExecuting(actionExecutingContext));
 
             // Assert (Exception message)
-            Assert.Equal("CARE ValidateModelStateAttribute: The context is null", ex.Message);
+            Assert.Equal("ConsistentApiResponseErrors ValidateModelStateAttribute: The context is null", ex.Message);
         }
 
         [Fact]
@@ -174,13 +189,13 @@ namespace ConsistentApiResponseErrors.xUnit.Filters
             // Prepare the IValidatorFactory with the RequestModelBasicValidator
             var mockValidatorFactory = new Mock<IValidatorFactory>();
             mockValidatorFactory.Setup(vm => vm.GetValidator(typeof(RequestModelBasic))).Returns(new RequestModelBasicValidator());
-            var validateModelStateAttribute = new ValidateModelStateAttribute(mockValidatorFactory.Object);
+            var validateModelStateAttribute = new ValidateModelStateAttribute(mockValidatorFactory.Object, _logger);
 
             // Act & Assert (Exception is thrown)
             var ex = Assert.Throws<Exception>(() => validateModelStateAttribute.OnActionExecuting(actionExecutingContext));
 
             // Assert (Exception message)
-            Assert.Equal("CARE ValidateModelStateAttribute: The ActionArgument.Value is null", ex.Message);
+            Assert.Equal("ConsistentApiResponseErrors ValidateModelStateAttribute: The ActionArgument.Value is null", ex.Message);
         }
 
     }

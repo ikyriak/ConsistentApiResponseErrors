@@ -9,6 +9,10 @@ using FluentValidation.Results;
 using ConsistentApiResponseErrors.ConsistentErrors;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ConsistentApiResponseErrors.Filters
 {
@@ -19,10 +23,20 @@ namespace ConsistentApiResponseErrors.Filters
     public class ValidateModelStateAttribute : ActionFilterAttribute
     {
         private readonly IValidatorFactory _validatorFactory;
+        private readonly ILogger _logger;
 
-        public ValidateModelStateAttribute(IValidatorFactory validatorFactory)
+        public ValidateModelStateAttribute(IValidatorFactory validatorFactory, ILogger<ValidateModelStateAttribute> logger)
         {
             _validatorFactory = validatorFactory;
+
+            if (logger != null)
+            {
+                _logger = logger;
+            }
+            else
+            {
+                _logger = NullLogger.Instance;
+            }
         }
 
         /// <summary>
@@ -32,12 +46,15 @@ namespace ConsistentApiResponseErrors.Filters
         /// <inheritdoc />
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            //TODO: Add DEBUG level log for the validation result:
-            Console.WriteLine("CARE OnActionExecuting: Start validation");
+            string traceId = Guid.NewGuid().ToString();
+            _logger.LogInformation("({traceId}): Start validation OnActionExecuting", traceId);
 
             if (context == null)
             {
-                throw new Exception("CARE ValidateModelStateAttribute: The context is null");
+                Exception exception = new Exception("ConsistentApiResponseErrors ValidateModelStateAttribute: The context is null");
+                _logger.LogError(exception, exception.Message + " ({traceId})", traceId);
+                
+                throw exception;
             }
 
 
@@ -70,14 +87,17 @@ namespace ConsistentApiResponseErrors.Filters
                 {
                     if (ActionArgument.Value == null)
                     {
-                        throw new Exception("CARE ValidateModelStateAttribute: The ActionArgument.Value is null");
+                        Exception exception = new Exception("ConsistentApiResponseErrors ValidateModelStateAttribute: The ActionArgument.Value is null");
+                        _logger.LogError(exception, exception.Message + " ({traceId})", traceId);
+                        
+                        throw exception;
                     }
 
                     IValidator validator = _validatorFactory.GetValidator(ActionArgument.Value.GetType());
                     if (validator == null)
                     {
-                        //TODO: Add log if no validator is found:
-                        Console.WriteLine($"CARE ValidateModelStateAttribute: The validator is null for type {ActionArgument.Value.GetType().ToString()}");
+                        // Add log if no validator is found:
+                        _logger.LogWarning("{traceId}: The validator is null for type {ActionArgumentType}", traceId, ActionArgument.Value.GetType().ToString());
                         continue;
                     }
 
@@ -87,22 +107,22 @@ namespace ConsistentApiResponseErrors.Filters
                         allErrors.AddRange(result.Errors);
                     }
 
-                    //TODO: Add DEBUG level log for the validation result:
-                    Console.WriteLine($"CARE ValidateModelStateAttribute: The validation result: {result.IsValid.ToString()} for value \"{ActionArgument.Value.ToString()}\"");
+                    // Add log for the validation result:
+                    _logger.LogInformation("({traceId}): The validation result: {IsResultValid} for value \"{ActionArgumentValue}\"", traceId, result.IsValid.ToString(), ActionArgument.Value.ToString());
                 }
             }
 
             // When errors exist return a BadRequestObjectResult
             if (allErrors.Count > 0)
             {
-                //TODO: Logging validation errors with this specific traceID:
-                string traceID = Guid.NewGuid().ToString();
+                // Log validation errors with this specific traceID:
+                _logger.LogWarning("({traceId}): Validation Errors: {ValidationErrors}", traceId, allErrors);
 
-                context.Result = new BadRequestObjectResult(new ValidationError(allErrors, traceID));
+                context.Result = new BadRequestObjectResult(new ValidationError(allErrors, traceId));
             }
 
-            //TODO: Add DEBUG level log for the validation result:
-            Console.WriteLine("CARE OnActionExecuting: End validation");
+            // Add log for the validation result:
+            _logger.LogInformation("({traceId}): OnActionExecuting: End validation", traceId);
         }
     }
 
