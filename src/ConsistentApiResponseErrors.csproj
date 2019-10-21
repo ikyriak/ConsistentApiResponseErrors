@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <Authors>Ioannis Kyriakidis</Authors>
     <Company>ikyriakidis.com</Company>
-    <Version>1.0.2</Version>
+    <Version>0.1.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
