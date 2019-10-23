@@ -43,7 +43,7 @@ namespace ConsistentApiResponseErrors.ConsistentErrors
         public string StatusMessage { get; set; }
         public string ErrorMessage { get; set; }
         public string TraceId { get; set; }
-        public string StackTrace { get; set; }
+        public string StackTrace { internal get; set; }
     }
 
 }

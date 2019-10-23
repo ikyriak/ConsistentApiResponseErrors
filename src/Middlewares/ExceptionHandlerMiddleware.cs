@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace ConsistentApiResponseErrors.Middlewares
 {
@@ -66,8 +67,13 @@ namespace ConsistentApiResponseErrors.Middlewares
                 context.Response.StatusCode = httpStatusCode;
                 context.Response.ContentType = JsonContentType;
 
-                // Writes / Returns error model to the response
-                await context.Response.WriteAsync(JsonConvert.SerializeObject(apiException));
+                // Writes / Returns error model to the response (in camelCase format)
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(
+                    apiException,
+                    new JsonSerializerSettings
+                    {
+                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                    }));
             }
         }
 
