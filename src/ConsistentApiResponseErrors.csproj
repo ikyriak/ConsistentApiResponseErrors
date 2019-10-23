@@ -4,7 +4,12 @@
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <Authors>Ioannis Kyriakidis</Authors>
     <Company>ikyriakidis.com</Company>
-    <Version>0.1.1</Version>
+    <Version>0.1.1-beta</Version>
+    <Description>Consistent API Response Errors (CARE) is an ASP.NET Core middleware that centralizes the handling of input-validation errors, application exceptions and unhandled exceptions. Simplifies the API controllers by containing only the calls for the appropriate business-login service (without the need of input-validators and try-catch).</Description>
+    <PackageTags>consistent;structured;centralized;api response;validation errors;application errors;unhandled exceptions;asp.net core</PackageTags>
+    <RepositoryUrl>https://github.com/ikyriak/ConsistentApiResponseErrors.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/ikyriak/ConsistentApiResponseErrors</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
