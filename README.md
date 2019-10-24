@@ -123,9 +123,9 @@ Content-Language: en
 }
 ```
 
-## NuGet
+## NuGet package
 
-TO BE ADDED!
+CARE middleware is available as a NuGet package. The NuGet package can be accessed [here](https://github.com/ikyriak/ConsistentApiResponseErrors).
 
 ## Configuration
 
