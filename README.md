@@ -125,7 +125,7 @@ Content-Language: en
 
 ## NuGet package
 
-CARE middleware is available as a NuGet package. The NuGet package can be accessed [here](https://github.com/ikyriak/ConsistentApiResponseErrors).
+CARE middleware is available as a NuGet package. The NuGet package can be accessed [here](https://www.nuget.org/packages/ConsistentApiResponseErrors/).
 
 ## Configuration
 
