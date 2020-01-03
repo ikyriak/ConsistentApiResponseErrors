@@ -1,6 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using ConsistentApiResponseErrors.Helpers.Enums;
 using FluentValidation.Results;
+using System;
+using System.Collections.Generic;
+using System.Net;
 
 namespace ConsistentApiResponseErrors.ConsistentErrors
 {
@@ -12,8 +14,8 @@ namespace ConsistentApiResponseErrors.ConsistentErrors
     {
         public ValidationError(List<ValidationFailure> ValidationFailures, string TraceId)
         {
-            this.StatusCode = 400;
-            this.StatusMessage = "Bad Request";
+            this.StatusCode = (int)HttpStatusCode.BadRequest;
+            this.StatusMessage = HttpStatusCode.BadRequest.ToStringSpaceCamelCase();
             this.TraceId = TraceId;
 
             Errors = new List<Error>();

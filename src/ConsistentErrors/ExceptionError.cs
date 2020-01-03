@@ -1,5 +1,7 @@
-﻿using System;
-using ConsistentApiResponseErrors.Exceptions;
+﻿using ConsistentApiResponseErrors.Exceptions;
+using ConsistentApiResponseErrors.Helpers.Enums;
+using System;
+using System.Net;
 
 namespace ConsistentApiResponseErrors.ConsistentErrors
 {
@@ -20,8 +22,8 @@ namespace ConsistentApiResponseErrors.ConsistentErrors
                     this.StackTrace = string.Empty;
                     break;
                 default:
-                    this.StatusCode = 500;
-                    this.StatusMessage = "Internal Server Error";
+                    this.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    this.StatusMessage = HttpStatusCode.InternalServerError.ToStringSpaceCamelCase();
                     this.StackTrace = exception.StackTrace;
                     break;
             }
