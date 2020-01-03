@@ -20,7 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\ConsistentApiResponseErrors.csproj" />
+    <ProjectReference Include="..\src\ConsistentApiResponseErrors.Errors\ConsistentApiResponseErrors.Errors.csproj" />
+    <ProjectReference Include="..\src\ConsistentApiResponseErrors\ConsistentApiResponseErrors.csproj" />
   </ItemGroup>
+
 
 </Project>
