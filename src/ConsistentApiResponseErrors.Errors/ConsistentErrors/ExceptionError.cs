@@ -46,6 +46,15 @@ namespace ConsistentApiResponseErrors.ConsistentErrors
         {
         }
 
+        public ExceptionError()
+        {
+            this.StatusCode = 0;
+            this.StatusMessage = string.Empty;
+            this.ErrorMessage = string.Empty;
+            this.StackTrace = string.Empty;
+            this.TraceId = string.Empty;
+        }
+
         public int StatusCode { get; set; }
         public string StatusMessage { get; set; }
         public string ErrorMessage { get; set; }

@@ -12,7 +12,15 @@ namespace ConsistentApiResponseErrors.ConsistentErrors
     [Serializable]
     public class ValidationError
     {
-        public ValidationError(List<ValidationFailure> ValidationFailures, string TraceId)
+        public ValidationError()
+        {
+            this.StatusCode = 0;
+            this.StatusMessage = String.Empty;
+            this.TraceId = string.Empty;
+            Errors = new List<Error>();
+        }
+
+        public ValidationError(IList<ValidationFailure> ValidationFailures, string TraceId)
         {
             this.StatusCode = (int)HttpStatusCode.BadRequest;
             this.StatusMessage = HttpStatusCode.BadRequest.ToStringSpaceCamelCase();
@@ -28,7 +36,7 @@ namespace ConsistentApiResponseErrors.ConsistentErrors
         public int StatusCode { get; set; }
         public string StatusMessage { get; set; }
         public string TraceId { get; set; }
-        public List<Error> Errors { get; set; }
+        public IList<Error> Errors { get; set; }
     }
 
 }

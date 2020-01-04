@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using ConsistentApiResponseErrors.ConsistentErrors;
-using Microsoft.AspNetCore.Hosting;
+using ConsistentApiResponseErrors.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -47,19 +47,24 @@ namespace ConsistentApiResponseErrors.Middlewares
             {
                 string traceID = Guid.NewGuid().ToString();
 
-                ExceptionError apiException = new ExceptionError(exception, traceID);
-
-                // 2020-01-04: Log StackTrace in Production also, not only on Development
-                //if (!env.IsDevelopment())
-                //{
-                //    apiException.StackTrace = string.Empty;
-                //}
-
                 // Log validation errors with this specific traceID:
                 logger.LogError(exception, exception.Message + $" ({traceID})");
 
-                //var httpStatusCode = ConfigurateExceptionTypes(exception);
-                var httpStatusCode = apiException.StatusCode;
+                // 2020-01-04: Handle custom "ValidationExceptions" in order to return the related "ValidationError"
+                object errorResult;
+                int httpStatusCode;
+                switch (exception)
+                {
+                    case ValidationException validationException when exception is ValidationException:
+                        errorResult = validationException.ValidationResult;
+                        httpStatusCode = validationException.ValidationResult.StatusCode;
+                        break;
+                    default:
+                        ExceptionError apiException = new ExceptionError(exception, traceID);
+                        httpStatusCode = apiException.StatusCode;
+                        errorResult = apiException;
+                        break;
+                }                                           
 
                 // Set HTTP status code and content type
                 context.Response.StatusCode = httpStatusCode;
@@ -67,7 +72,7 @@ namespace ConsistentApiResponseErrors.Middlewares
 
                 // Writes / Returns error model to the response (in camelCase format)
                 await context.Response.WriteAsync(JsonConvert.SerializeObject(
-                    apiException,
+                    errorResult,
                     new JsonSerializerSettings
                     {
                         ContractResolver = new CamelCasePropertyNamesContractResolver()
