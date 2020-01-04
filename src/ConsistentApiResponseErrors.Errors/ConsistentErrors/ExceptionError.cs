@@ -19,7 +19,7 @@ namespace ConsistentApiResponseErrors.ConsistentErrors
                 case ApiBaseException apiException when exception is ApiBaseException:
                     this.StatusCode = apiException.StatusCode;
                     this.StatusMessage = apiException.StatusMessage;
-                    this.StackTrace = string.Empty;
+                    this.StackTrace = apiException.StackTrace;
                     break;
                 default:
                     this.StatusCode = (int)HttpStatusCode.InternalServerError;
