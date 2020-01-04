@@ -58,7 +58,7 @@ namespace ConsistentApiResponseErrors.Middlewares
                 }
 
                 // Log validation errors with this specific traceID:
-                logger.LogError(exception, exception.Message + " ({traceId})", traceID);
+                logger.LogError(exception, exception.Message + $" ({traceID})");
 
                 //var httpStatusCode = ConfigurateExceptionTypes(exception);
                 var httpStatusCode = apiException.StatusCode;
