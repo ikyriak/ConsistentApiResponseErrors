@@ -41,11 +41,16 @@ namespace ConsistentApiResponseErrors.ConsistentErrors
             this.TraceId = TraceId;
         }
 
+        public ExceptionError(HttpStatusCode httpStatusCode, Exception exception, string TraceId)
+            : this((int)httpStatusCode, httpStatusCode.ToStringSpaceCamelCase(), exception, TraceId)
+        {
+        }
+
         public int StatusCode { get; set; }
         public string StatusMessage { get; set; }
         public string ErrorMessage { get; set; }
         public string TraceId { get; set; }
-        public string StackTrace { internal get; set; }
+        public string StackTrace { get; internal set; }
     }
 
 }
