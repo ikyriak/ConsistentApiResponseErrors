@@ -63,22 +63,9 @@ namespace ConsistentApiResponseErrors.Filters
             // Validate the basic model state
             if (!context.ModelState.IsValid)
             {
-                foreach(string modelStateKey in context.ModelState.Keys)
-                {
-                    var modelState = context.ModelState[modelStateKey];
-                    if (modelState.Errors.Count <= 0)
-                    {
-                        continue;
-                    }
-
-                    foreach (ModelError modelError in modelState.Errors)
-                    {
-                        ValidationFailure validationFailure = new ValidationFailure(modelStateKey, modelError.ErrorMessage, modelState.AttemptedValue);
-                        validationFailure.ErrorCode = "bad_request";
-                        
-                        allErrors.Add(validationFailure);
-                    }
-                }
+                // 2020-01-04: Use the "Exceptions.ValidationException" to convert ModelState to Fluent-ValidationFailures
+                Exceptions.ValidationException validationException = new Exceptions.ValidationException("bad_request", context.ModelState, traceId);
+                allErrors.AddRange(validationException.ValidationFailures);
             }
             else if(context.ActionArguments != null)
             {
