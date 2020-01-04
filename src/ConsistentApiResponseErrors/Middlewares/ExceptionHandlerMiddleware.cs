@@ -17,8 +17,6 @@ namespace ConsistentApiResponseErrors.Middlewares
         private const string JsonContentType = "application/problem+json";
         private readonly RequestDelegate request;
 
-        private readonly IHostingEnvironment env;
-
         private readonly ILogger logger;
 
         /// <summary>
@@ -26,11 +24,9 @@ namespace ConsistentApiResponseErrors.Middlewares
         /// </summary>
         /// <param name="next">The next.</param>
         public ExceptionHandlerMiddleware(RequestDelegate next,
-            IHostingEnvironment env,
             ILogger<ExceptionHandlerMiddleware> logger)
         {
             this.request = next;
-            this.env = env;
             this.logger = logger;
         }
 
@@ -52,10 +48,12 @@ namespace ConsistentApiResponseErrors.Middlewares
                 string traceID = Guid.NewGuid().ToString();
 
                 ExceptionError apiException = new ExceptionError(exception, traceID);
-                if (!env.IsDevelopment())
-                {
-                    apiException.StackTrace = string.Empty;
-                }
+
+                // 2020-01-04: Log StackTrace in Production also, not only on Development
+                //if (!env.IsDevelopment())
+                //{
+                //    apiException.StackTrace = string.Empty;
+                //}
 
                 // Log validation errors with this specific traceID:
                 logger.LogError(exception, exception.Message + $" ({traceID})");
