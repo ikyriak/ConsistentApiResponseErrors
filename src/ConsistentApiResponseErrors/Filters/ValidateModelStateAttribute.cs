@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-
+using ConsistentApiResponseErrors.ConsistentErrors;
 using FluentValidation;
 using FluentValidation.Results;
-using ConsistentApiResponseErrors.ConsistentErrors;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ConsistentApiResponseErrors.Filters
@@ -53,7 +47,7 @@ namespace ConsistentApiResponseErrors.Filters
             {
                 Exception exception = new Exception("ConsistentApiResponseErrors ValidateModelStateAttribute: The context is null");
                 _logger.LogError(exception, exception.Message + " ({traceId})", traceId);
-                
+
                 throw exception;
             }
 
@@ -67,7 +61,7 @@ namespace ConsistentApiResponseErrors.Filters
                 Exceptions.ValidationException validationException = new Exceptions.ValidationException("bad_request", context.ModelState, traceId);
                 allErrors.AddRange(validationException.ValidationFailures);
             }
-            else if(context.ActionArguments != null)
+            else if (context.ActionArguments != null)
             {
                 // Get the fluent validator for each argument and perform validation:
                 foreach (KeyValuePair<string, object> ActionArgument in context.ActionArguments)
@@ -76,7 +70,7 @@ namespace ConsistentApiResponseErrors.Filters
                     {
                         Exception exception = new Exception("ConsistentApiResponseErrors ValidateModelStateAttribute: The ActionArgument.Value is null");
                         _logger.LogError(exception, exception.Message + " ({traceId})", traceId);
-                        
+
                         throw exception;
                     }
 
