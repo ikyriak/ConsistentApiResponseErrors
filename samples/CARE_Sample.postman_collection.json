@@ -1,0 +1,124 @@
+{
+	"info": {
+		"_postman_id": "34b5d1f8-867a-4c47-add1-73cd683c74c1",
+		"name": "ConsistentApiResponseErrors_Sample",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create a Weather Forecast (Successfully)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Date\":\"2021-03-25\",\r\n    \"TemperatureC\":20,\r\n    \"Summary\":\"A nice day to have a walk with the family.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:44318/weatherforecast",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44318",
+					"path": [
+						"weatherforecast"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create a Weather Forecast (Validation Error)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Date\":\"2021-03-26\",\r\n    \"TemperatureC\":60,\r\n    \"Summary\":\"I'm on the highway to hell\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:44318/weatherforecast",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44318",
+					"path": [
+						"weatherforecast"
+					]
+				},
+				"description": "Validation Errors: Providing details about the validation errors of the input request.\n\nAn HTTP 400 error is returned."
+			},
+			"response": []
+		},
+		{
+			"name": "Create a Weather Forecast (Application Exception)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Date\":\"2021-03-24\",\r\n    \"TemperatureC\":21,\r\n    \"Summary\":\"A nice day to have a walk with the family.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:44318/weatherforecast",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44318",
+					"path": [
+						"weatherforecast"
+					]
+				},
+				"description": "Application Exceptions: User-defined exceptions thrown to provide details about application-specific or business logic issues.\n\nThe defined HTTP error code is returned."
+			},
+			"response": []
+		},
+		{
+			"name": "Create a Weather Forecast (Unhandled Exception)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Date\":\"2021-03-23\",\r\n    \"TemperatureC\":21,\r\n    \"Summary\":\"A nice day to have a walk with the family.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:44318/weatherforecast",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44318",
+					"path": [
+						"weatherforecast"
+					]
+				},
+				"description": "Unhandled Exceptions: Thrown when a non-recoverable error has occurred. These are common exceptions that are thrown by the .NET Common Language Runtime.\n\nA HTTP 500 error is returned for unhandled exceptions."
+			},
+			"response": []
+		}
+	]
+}
