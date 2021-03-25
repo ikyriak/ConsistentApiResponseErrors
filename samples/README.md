@@ -25,7 +25,7 @@ To use the sample project just start debugging (F5) and your default browser wil
 To evaluate how the CARE library handles Input-Validation errors and Exception:
 
 1. Install and run the [Postman](https://www.postman.com/downloads/) app.
-2. Import the sample collection file (`CARE_Sample.postman_collection.json`)  in Postman > Import > File.
+2. Import the sample collection file ([CARE_Sample.postman_collection.json](CARE_Sample.postman_collection.json))  in Postman > Import > File.
 
 
 
