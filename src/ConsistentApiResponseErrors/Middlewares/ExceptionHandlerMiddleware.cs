@@ -64,7 +64,7 @@ namespace ConsistentApiResponseErrors.Middlewares
                         httpStatusCode = apiException.StatusCode;
                         errorResult = apiException;
                         break;
-                }                                           
+                }
 
                 // Set HTTP status code and content type
                 context.Response.StatusCode = httpStatusCode;
