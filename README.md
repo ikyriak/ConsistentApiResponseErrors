@@ -166,13 +166,16 @@ namespace ExampleProject.Core.Application.Exceptions
         public EntityNotFoundException() :
             base(_httpStatusCode, _httpStatusMessage, _DefaultErrorMessage)
         {
-
         }
 
         public EntityNotFoundException(string message)
            : base(_httpStatusCode, _httpStatusMessage, message)
         {
+        }
 
+        public EntityNotFoundException(string message, Exception innerException)
+            : base(message, innerException)
+        {
         }
     }
 }
@@ -227,12 +230,11 @@ In your `ConfigureServices` class, register all validators from assembly by sett
 
 ```c#
 // Register all validators within a particular assembly:
-services.AddMvc(options =>
+services.AddControllers(options =>
 {
     // Use CARE model validator to reduce code duplication
     options.Filters.Add<ValidateModelStateAttribute>();
 })
-.SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
 .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<YOUR_VALIDATOR>());
 
 // Configure the default API behavour by setting up the MVC application to suppress validation filters in order to be handled by the `ConsistentApiResponseErrors.Filters.ValidateModelStateAttribute`
