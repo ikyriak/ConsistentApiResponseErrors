@@ -4,7 +4,7 @@
 
 ## Sample Project
 
-Currently, you can find a sample API project (in .NET Core 3.1 Framework) that uses the CARE library to handle:
+Currently, you can find a sample API project (in .NET Core 3.1 and .NET 5.0 Framework) that uses the CARE library to handle:
 
 - Input-Validation errors,
 - Application exceptions and,
