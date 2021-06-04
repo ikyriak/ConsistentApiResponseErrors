@@ -1,43 +1,151 @@
 # Consistent API Response Errors (CARE) <sup>BETA</sup>
 
-Consistent, structured response bodies on errors are crucial when building a maintainable, usable and predictable API. Consistent API Response Errors (CARE) is an ASP.NET Core middleware that:
+## Introduction
 
-- Centralizes the handling of
-  - input-validation errors,
-  - application exceptions and
-  - unhandled exceptions. 
-- Simplifies the API controllers by containing only the calls for the appropriate business-login service (without the need of input-validators and try-catch)
+Designing APIs is an important and complex process with many decisions involved that organizes and hides the complexity of software [[.NET Nakama (2020, August)](https://www.dotnetnakama.com/blog/what-is-an-api/#api-design)]. Τhis is accomplished by applying the principle of [information hiding](https://en.wikipedia.org/wiki/Information_hiding), which is the process of hiding the complexity of a piece of software (that is most likely to change) into modules of functionality. This will protect other parts of the software from extensive modifications. The following two important practices (among others) can be followed when designing Web APIs:
 
-If you care about your API consumers, use the CARE middleware and provide usable easy to implement and debug APIs.
+- Make its users (i.e. API consumers) and us happy. We have to understand the challenges of the API consumers (e.g. their limitations, specific needs, etc.) and try to help them by providing a user-friendly API.
+- Design APIs with consistent behaviour (e.g. consistent use of the HTTP verbs in REST, consistent Error Handling with useful information, etc.).
 
-## Response Error Types
+ APIs with consistent behaviour can simplify the API consumers’ implementation and make them happy for using our APIs. Using the HTTP error statuses (such as 4xx Client Errors and 5xx Server Errors) is a good start, but sometimes this is not sufficient to describe the different Web APIs errors. So, additional data that contains information about the problem details are needed (such as, an error-code, the data field that produced the error, etc.).
 
-| Error Type             | Description                                                  |
-| ---------------------- | ------------------------------------------------------------ |
-| Validation Errors      | Providing details about the validation errors of the input request. [FluentValidation](https://fluentvalidation.net/) is required to defining the validation rules. |
-| Application Exceptions | User-defined exceptions thrown to provide details about application-specific or business logic issues. |
-| Unhandled Exceptions   | Thrown when a non-recoverable error has occurred. These are common exceptions that are thrown by the .NET Common Language Runtime. |
+Let’s have a minute and think if we, as API designers, are really trying to understand our API consumer’s needs regarding error responses? They may be using different libraries or programming languages (they may even use JavaScript 😛). Also, let’s think about what we, as API consumers, would like from an API regarding error responses. What would make us happy?
 
-## Response Formats
+For me, consistent and structured response-bodies on errors would make me happy because I could build and maintain usable and predictable APIs and consumers. For that reason, I started an effort to create the Consistent API Response Errors (CARE) open-source NuGet library, which handles all errors and provide consistent error responses by using an alternative "problem detail" definition with useful information.
 
-Error response messages provide additional information that can be used to debug the error as well as providing user-friendly feedback.
+Let's start by investigating the RFC7807, which defines a "problem detail" as a way to carry machine-readable details of errors in an HTTP response. Then, we will see details about the CARE code and how to use the CARE library in an ASP.NET Core API project.
 
-### The CARE Response Formats
+## RFC7807 - The Problem Details Response Format
 
-#### General Response Error Format
+The [RFC7807](https://tools.ietf.org/html/rfc7807) of the Internet Engineering Task Force ([IETF](https://www.ietf.org/)) defines a standard format for the "problem detail" as a way to carry machine-readable details of errors in an HTTP response to avoid the need to define new error response formats for HTTP APIs.
 
-The following table presents the fields of the response for application and unhandled exceptions:
+ASP.NET Core supports by default the RFC7807 to specify errors in HTTP API responses, by using the [ProblemDetails](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.problemdetails?view=aspnetcore-5.0) class.
 
-| Field         | Type    | Description                                                  |
-| ------------- | ------- | ------------------------------------------------------------ |
-| statusCode    | Integer | The HTTP status code. The `StatusCode` and `StatusMessage` fields would come handy when someone is testing the API via browser. |
-| statusMessage | String  | The HTTP status message.                                     |
-| traceId       | String  | A Unique Id that can be used to trace the error in your logging system for more information (e.g. to see the Stack-Trace). |
-| errorMessage  | String  | A short human-readable string that describes the error.      |
+The RFC7807 defines two document formats for the problem detail as [JSON](https://datatracker.ietf.org/doc/html/rfc7807#section-3) or [XML](https://datatracker.ietf.org/doc/html/rfc7807#appendix-A). Depending on the selected problem detail format, the following media types are represented as a Content-Type header:
 
-An example of the general error format for application and unhandled exceptions:
+- JSON: "[application/problem+json](https://datatracker.ietf.org/doc/html/rfc7807#section-6.1)" media type
+- XML: "[application/problem+xml](https://datatracker.ietf.org/doc/html/rfc7807#section-6.2)" media type
 
-```json
+ 
+
+The main problem details object can have the following members:
+
+- **type** (string): A URI reference that identifies the problem type. This URI should return human-readable documentation for the problem type (e.g. using HTML).
+- **title** (string): A short, human-readable summary of the problem type.
+- **detail** (string): A longer, human-readable explanation specific to this occurrence of the problem.
+- **instance** (string): A URI reference of the specific instance that the problem has occurred.
+- **status** (number): The actual HTTP status code response as it is generated by the origin server for this occurrence of the problem.
+
+The following code example shows a possible error by using the main RFC7807 error format, for a scenario in which the user’s account doesn't have enough credit. 
+
+```http
+HTTP/1.1 403 Forbidden
+Content-Type: application/problem+json
+Content-Language: en
+
+{
+    "type": "https://example.com/probs/out-of-credit",
+    "title": "You do not have enough credit.",
+    "detail": "Your current balance is 30, but that costs 50.",
+    "instance": "/account/12345/msgs/abc",
+    "status": 403,
+}
+```
+
+
+
+The main problem details object can be extended with additional members for a specific problem. So, these extended members are not pre-defined and can be any data that are related to a specific error. For example, the previous error can be extended to include the account's “balance” and a list of URI accounts to deposit. The following code example shows an RFC7807 error with the two aforementioned extensions.
+
+``` http
+HTTP/1.1 403 Forbidden
+Content-Type: application/problem+json
+Content-Language: en
+
+{
+    "type": "https://example.com/probs/out-of-credit",
+    "title": "You do not have enough credit.",
+    "detail": "Your current balance is 30, but that costs 50.",
+    "instance": "/account/12345/msgs/abc",
+    "balance": 30,
+    "accounts": [
+        "/account/12345",
+        "/account/67890"
+    ]
+}
+```
+
+
+
+The extensions are commonly used for specific client needs (for example, show the remaining balance). The clients (i.e. API consumers) should ignore any extensions that they don't recognize. One of these needs is the validation errors details about the input request. The following code shows an example of such a case.
+
+``` http
+HTTP/1.1 400 Bad Request
+Content-Type: application/problem+json
+Content-Language: en
+
+{
+    "type": "https://example.net/validation-error",
+    "title": "Your request parameters didn't validate.",
+    "invalid-params": [
+        {
+            "name": "age",
+            "reason": "must be a positive integer"
+        },
+        {
+            "name": "color",
+            "reason": "must be 'green', 'red' or 'blue'"
+        }
+    ]
+}
+```
+
+
+
+## Consistent API Response Errors (CARE)
+
+The RFC7807 provides a very good definition of the problem details, and by using `extensions` it can be adapted for different API consumer’s needs. It is created to avoid the need of defining new error response formats for HTTP APIs. From my perspective, the issues of RFC7807 are that it is too generic (even for many common error cases such as validation errors) and doesn’t contain much useful information for the API consumers.
+
+The [Consistent API Response Errors](https://www.nuget.org/packages/ConsistentApiResponseErrors/) (CARE), which is inspired from the RFC7807, is an effort to provide even more standardized problem details responses (for example, for validation errors) by creating an open-source NuGet library to:
+
+- Centralize the handling of the following error types (see [Table 1](#table-1) for details):
+  - Validation errors,
+  - Application exceptions and
+  - Unhandled exceptions.
+- Return consistent and useful error information.
+- Simplify the API controllers by containing only the calls for the appropriate business-logic services (without the need of     boilerplate input-validators and try-catch).
+
+ 
+
+Table 1. - The type of errors that are handled by the CARE library.
+
+|     **Error Type**     | **Description**                                              |
+| :--------------------: | ------------------------------------------------------------ |
+|   Validation Errors    | It is providing details about the validation errors of the  input request. The [FluentValidation](https://fluentvalidation.net/)  library can be used to define the validation rules. |
+| Application Exceptions | Dev-defined exceptions that are thrown to provide  details about application-specific or business logic issues. |
+|  Unhandled Exceptions  | Exceptions are thrown when a non-recoverable error  has occurred. These are common exceptions that are thrown by the .NET Common  Language Runtime. |
+
+
+The aforementioned error types are handled by CARE providing the following two problem details response formats, which we will examine in the following sections.
+
+- General Response Error Format.
+- Validation Response Errors Format.
+
+ 
+
+### General Response Error Format
+
+The CARE library provides the [ApiBaseException](https://github.com/ikyriak/ConsistentApiResponseErrors/blob/master/src/ConsistentApiResponseErrors.Errors/Exceptions/ApiBaseException.cs) class to handle the Application API exceptions, which can be used to map an HTTP status code per application exception. The HTTP status code of the Unhandled exceptions is set by default to 500 (Internal Server Error). The following table presents the fields of the error response format for the `Application` and `Unhandled exceptions` when using the CARE library. 
+
+| **Field**     | **Type** | **Description**                                              |
+| ------------- | -------- | ------------------------------------------------------------ |
+| statusCode    | Integer  | The HTTP status code. The `StatusCode` and `StatusMessage`  fields would come in handy when someone is testing the API via browser. |
+| statusMessage | String   | The HTTP status message.                                     |
+| traceId       | String   | A Unique Id that can be used to trace the  error in your logging system for additional information (e.g. to see the  Stack-Trace). |
+| errorMessage  | String   | A short human-readable string that describes  the error.     |
+
+The following example presents the general error format for application and unhandled exceptions:
+
+``` http
 HTTP/1.1 503 Service Unavailable
 Content-Type: application/problem+json
 
@@ -49,27 +157,29 @@ Content-Type: application/problem+json
 }
 ```
 
-#### Validation Response Errors Format
 
-In a multiple validation errors scenario, there is the possibility that the consumer has more than one validation error in their request.
 
-The following table presents the fields of the response for validations errors:
+### Validation Response Errors Format
 
-| Field         | Type    | Description                                                  |
-| ------------- | ------- | ------------------------------------------------------------ |
-| statusCode   | Integer | The HTTP status code. The `StatusCode` and `StatusMessage` fields would come handy when someone is testing the API via browser. |
-| statusMessage | String  | The HTTP status message.                                     |
-| traceId      | String  | A Unique Id that can be used to trace the error in your logging system for more information (e.g. to see the StackTrace). |
-| errors       | Array   | An array containing multiple validation errors |
-| &#9492; code | String | A unique error code describing the specific error case. Using a numeric error code is the most common approach. Personally a suggest the use of string based error codes as they are easy to read. |
-| &#9492; field | String | The name of the field which has this error (as in the incoming request). |
-| &#9492;&nbsp;attemptedValue | Object | Contains the attempted-original value from the request. This is very useful in cases where an array of same resources are accepted. The attempted-original value in the response helps the consumer to track which resource in the request had the error. |
-| &#9492; message | String | A short human-readable string that describes the error. |
-| &#9492; helpURL | String | A URL to a page that describes this particular error in more detail. |
+In an API, we would like to perform validations in the request parameters. In a multiple validation errors scenario, there is the possibility that the consumer should get more than one validation errors. The following table presents the fields of the error response format for the validations errors when using the CARE library. 
 
-An example of the validation response error format:
+| **Field**       | **Type** | **Description**                                              |
+| --------------- | -------- | ------------------------------------------------------------ |
+| statusCode      | Integer  | The HTTP status code. The `StatusCode` and `StatusMessage`  fields would come in handy when someone is testing the API via browser. |
+| statusMessage   | String   | The HTTP status message.                                     |
+| traceId         | String   | A Unique Id that can be used to trace the  error in your logging system for more information (e.g. to see the  StackTrace). |
+| errors          | Array    | An array containing multiple validation errors               |
+| &#9492;&nbsp;code           | String   | A unique error code describing the specific  error case. Using a numeric error code is the most common approach.  Personally, I suggest the use of string-based error codes as they are easier  to read and re-use. |
+| &#9492;&nbsp;field          | String   | The name of the field which has this error (as  was in the incoming request). |
+| &#9492;&nbsp;attemptedValue | Object   | Contains the attempted original value from the  request. This is very useful in cases where an array of the same resources is  accepted. The attempted-original value in the response helps the consumer to  track which resource in the request had the error. |
+| &#9492;&nbsp;message        | String   | A short human-readable string that describes  the error.     |
+| &#9492;&nbsp;helpURL        | String   | A URL to a page that describes this particular  error in more detail. |
 
-```json
+ 
+
+In the following example, we can see how multiple errors (for the `email` and `password` fields) are represented.
+
+``` http
 HTTP/1.1 400 Bad Request
 Content-Type: application/json; charset=utf-8
 
@@ -81,7 +191,7 @@ Content-Type: application/json; charset=utf-8
         {
             "code": "bad_format",
             "field": "email",
-            "attemptedValue": "test1test.gr",
+            "attemptedValue": "test1test.com",
             "message": "{email} is not in correct format",
             "helpURL": ""
         },
@@ -96,61 +206,74 @@ Content-Type: application/json; charset=utf-8
 }
 ```
 
-### The Problem Details Response Format (RFC7807)
 
-[RFC7807](https://tools.ietf.org/html/rfc7807) defines a "problem detail" as a way to carry machine-readable details of errors in a HTTP response to avoid the need to define new error response formats for HTTP APIs.
 
-`This format is currently not supported by CARE middleware.`
+### The Source Code
 
-An example of the RFC7807 Problem Details Response: 
+The source code of the CARE library can be found on [GitHub](https://github.com/ikyriak/ConsistentApiResponseErrors). Let’s have a quick look at the projects and the main code files.
 
-```json
-HTTP/1.1 400 Bad Request
-Content-Type: application/problem+json
-Content-Language: en
+**ConsistentApiResponseErrors.Errors**: A core library that defines the exception and response classes. This separate light library is created to be used in application layers where we only need to define and throw exceptions.
 
+-  `/Exceptions/`: The exception classes that we could use either as base class or be thrown.
+    - `ApiBaseException.cs`: A base class that can be used to create Application related API exceptions and map them with HTTP status codes and messages.
+    - `ValidationException.cs`: A class that can be used to throw custom validation exceptions.
+-  `/ConsistentErrors/`: The consistent response error format classes.
+    - `ExceptionError.cs`: The response error format class for the Application and Unhandled Exceptions.
+    - `ValidationError.cs`: The response error format class for the validation exceptions.
+
+**ConsistentApiResponseErrors**: The main library contains the code for the implemented middleware and filter.
+
+- `/Middlewares/ExceptionHandlerMiddleware.cs`: The middleware is used to catch all exceptions and return consistent responses.
+- `/Filters/ValidateModelStateAttribute.cs`: A filter that can be used to validate the request input parameters of the controllers. In this way, there is no need to write boilerplate code anymore. Forget about the `if (!context.ModelState.IsValid) { … }`. In addition, the implemented filter handles the implemented FluentValidators.
+
+
+
+## CARE NuGet package
+
+The CARE project is available as a [NuGet package](https://www.nuget.org/packages/ConsistentApiResponseErrors/). In this section, we will see how we could use the NuGet package in a Web API project. For more examples, you can check the [sample projects](https://github.com/ikyriak/ConsistentApiResponseErrors/tree/master/samples) on GitHub.
+
+### Use CARE for Unhandled Exceptions
+
+To let the CARE library handle all unhandled exception, we will have to use the `ExceptionHandlerMiddleware` in the `Configure` method (`Startup.cs`).
+
+``` c#
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
-	"type": "https://example.net/validation-error",
-	"title": "Your request parameters didn't validate.",
-	"invalid-params": [ {
-		"name": "age",
-		"reason": "must be a positive integer"
-	},
-	{
-		"name": "color",
-		"reason": "must be 'green', 'red' or 'blue'"
-    } ]
+    if (env.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    }
+
+    app.UseHttpsRedirection();
+    
+    // CARE for all Unhandled exceptions
+    app.UseMiddleware<ConsistentApiResponseErrors.Middlewares.ExceptionHandlerMiddleware>();
+    
+    app.UseRouting();
+    
+    app.UseAuthorization();
+    
+    app.UseEndpoints(endpoints =>
+    {
+        endpoints.MapControllers();
+    });
 }
 ```
 
-## NuGet package
 
-CARE middleware is available as a NuGet package. The NuGet package can be accessed [here](https://www.nuget.org/packages/ConsistentApiResponseErrors/).
 
-## Configuration
 
-### Using CARE for Unhandled Exceptions
+### Use CARE for Application Exceptions
 
- In the `Configure` method, add the following:
-
-```c#
-// CARE for all Unhandled exceptions
-app.UseMiddleware<ConsistentApiResponseErrors.Middlewares.ExceptionHandlerMiddleware>();
-```
-
-### Using CARE for Application Exceptions
-
-Initially perform the previous step in order to use the Middleware.
-
-CARE can be used for your Application Exceptions by changing them in order to implement  the `ApiBaseException`, which requires the definition of the following parameters:
+The CARE library can handle our Application Exceptions. For that purpose, we will need to change our existing exception classes to implement the ``ApiBaseException``, which requires the definition of the following properties:
 
 - HTTP Status Code
 - HTTP Status Message
 - Error Message
 
-For example, if one would throw an exception when an entity is not found, then you'd start by implementing the `ApiBaseException` class for that exception and define the aforementioned parameters, appropriately:
+For example, if we would like to throw an exception when an entity is not found, then we would start by implementing the ``ApiBaseException`` class for the specific exception (`EntityNotFoundException`) and define the aforementioned properties, appropriately, as we can see in the following code example.
 
-```c#
+``` c#
 using System;
 using ConsistentApiResponseErrors.Exceptions;
 
@@ -167,80 +290,128 @@ namespace ExampleProject.Core.Application.Exceptions
             base(_httpStatusCode, _httpStatusMessage, _DefaultErrorMessage)
         {
         }
-
+    
         public EntityNotFoundException(string message)
            : base(_httpStatusCode, _httpStatusMessage, message)
         {
         }
-
+    
         public EntityNotFoundException(string message, Exception innerException)
-            : base(message, innerException)
+            : base(_httpStatusCode, _httpStatusMessage, message, innerException)
         {
         }
     }
 }
 ```
 
-### Using CARE for Validation Errors
 
-#### Create the Fluent-Validators for all request DTOs.
 
-For example, add validators for the properties of the `ExampleRequestModel` DTO class. More details about FluentValidation visit the project's [website](https://fluentvalidation.net/).
+### Use CARE for Validation Errors
 
-```c#
-using FluentValidation;
-using ExampleProject.Core.Application.Services.DTOs;
+The validation errors provide useful information to the end-user to adapt the provided input values. As we can understand, an API needs to provide the necessary error information to the API consumer in a consistent format. For example, this will provide the UI related consumer with the ability to handle all input errors and inform the user by implementing and using a common code.
 
-namespace ExampleProject.Core.Application.Services.Validators
+In the Web API controllers, we would need to validate the input values before continuing the execution flow. When building an API, we may need to create multiple request DTOs ([Data Transfer Objects](https://en.wikipedia.org/wiki/Data_transfer_object)) for different requests, which may share some common properties (e.g. a price value, a more complex object, etc.). The main issues here are the following:
+
+- The boilerplate code regarding the validation of the input values that is needed in each API Controller action. Sometimes, we may forget to call the input validation code.
+- Several validation implementations of the same input properties are sometimes created, which is not efficient to maintain.
+
+ 
+
+The CARE library provides a filter to get rid of the boilerplate code regarding the validation of the input parameters. The main idea is to have clean controllers, containing only the code about the intended actions.
+
+Re-usable input validation implementations can be performed by using the [FluentValidation](https://fluentvalidation.net/) library. FluentValidation is a .NET library for building strongly-typed validation rules. The CARE library is compatible with the FluentValidation library to automatically perform the appropriate validations.
+
+In this section, we will see how to configure our API to let the CARE library handle the input validations and return consistent and useful errors.
+
+#### Step 1: Create Fluent-Validators for All Request DTOs
+
+Let’s assume that we have the following request DTO (WeatherForecastRequest) with three properties: Date, Temperature in Celsius and a Summary. We can create a FluentValidator (e.g. WeatherForecastRequestValidator) in which we will add validators for the properties of the WeatherForecastRequest DTO class. For more information about fluent validators’ creation, you can visit the project's [website](https://docs.fluentvalidation.net/en/latest/start.html#creating-your-first-validator).
+
+``` c#
+public class WeatherForecastRequest
 {
-    public class ExampleRequestModelValidator : AbstractValidator<ExampleRequestModel>
-    {
-        public MomentRequestModelValidator()
-        {
-            RuleFor(x => x.UserId)
-                .NotNull()
-                    .WithErrorCode("missing_field_value")
-                    .WithMessage("The {UserId} does not contain value")
-                .GreaterThanOrEqualTo(1)
-                    .WithErrorCode("bad_format")
-                    .WithMessage("{UserId} should have a value greatet than zero (0)");
-
-            RuleFor(x => x.Message)
-                .NotEmpty()
-                .MaximumLength(1000)
-                .WithErrorCode("bad_format")
-                .WithMessage("{message} should have a value with maximum length of 1000");
-        }
-    }
+    public DateTime Date { get; set; }
+    public int TemperatureC { get; set; }
+    public string Summary { get; set; }
 }
 ```
 
-#### Setup using statements
 
- In your `Startup` class, add a using statements:
 
-```c#
+
+As we can see in the `WeatherForecastRequestValidator` class, we have defined the needed validators for our properties, the error codes, the error messages, etc. The limits of the temperature and summary length are hard-coded in this implementation. This can be improved by reading them from a configuration, a database, etc. In addition, FluentValidator supports [complex properties](https://docs.fluentvalidation.net/en/latest/start.html#complex-properties), so that validators can be re-used in different classes.
+
+``` c#
+public class WeatherForecastRequestValidator : AbstractValidator<WeatherForecastRequest>
+{
+    public WeatherForecastRequestValidator()
+    {
+        RuleFor(x => x.TemperatureC)
+            .NotNull()
+                .WithErrorCode("missing_field_value")
+                .WithMessage("The {TemperatureC} does not contain value")
+            .GreaterThanOrEqualTo(-20)
+                .WithErrorCode("bad_format")
+                .WithMessage("{TemperatureC} should have a lower value of -20")
+            .LessThanOrEqualTo(55)
+                .WithErrorCode("bad_format")
+                .WithMessage("{TemperatureC} should have a greater value of 55");
+
+        RuleFor(x => x.Summary)
+            .NotEmpty()
+            .MaximumLength(500)
+            .WithErrorCode("bad_format")
+            .WithMessage("{message} should have a value with maximum length of 1000");
+   }
+}
+```
+
+
+
+#### Step 2: Setup Using Statements
+
+In your ``Startup`` class, add the following `using` statements:
+
+``` c#
 using ConsistentApiResponseErrors.Filters;
 using FluentValidation.AspNetCore;
 ```
 
-#### Configure the MVC Service
 
-In your `ConfigureServices` class, register all validators from assembly by setting the `YOUR_VALIDATOR` with one them. In addition, suppress the .NET default validation filters.
 
-```c#
-// Register all validators within a particular assembly:
-services.AddControllers(options =>
+#### Step 3: Configure the MVC Service
+
+In your `ConfigureServices` class, register all validators from the assembly, by replacing the `WeatherForecastRequestValidator` with one of yours. In addition, suppress the .NET default validation filters to let the CARE library handle them.
+
+``` c#
+public void ConfigureServices(IServiceCollection services)
 {
-    // Use CARE model validator to reduce code duplication
-    options.Filters.Add<ValidateModelStateAttribute>();
-})
-.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<YOUR_VALIDATOR>());
+    // Register all validators within a particular assembly:
+    services.AddControllers(options =>
+    {
+        // Use CARE model validator to reduce code duplication
+        options.Filters.Add<ValidateModelStateAttribute>();
+    })
+    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<WeatherForecastRequestValidator>());
 
-// Configure the default API behavour by setting up the MVC application to suppress validation filters in order to be handled by the `ConsistentApiResponseErrors.Filters.ValidateModelStateAttribute`
-services.Configure<ApiBehaviorOptions>(options =>
-{
-    options.SuppressModelStateInvalidFilter = true;
-});
+    // Configure the default API behaviour by setting up the MVC application to suppress
+    // validation filters in order to be handled by the `ConsistentApiResponseErrors.Filters.ValidateModelStateAttribute`
+    services.Configure<ApiBehaviorOptions>(options =>
+    {
+        options.SuppressModelStateInvalidFilter = true;
+    });
+
+}
 ```
 
+## Summary
+
+Consistent and structured response bodies on errors are crucial when building maintainable, usable and predictable APIs. When building an API, it’s important to understand the challenges of the API consumers and try to help them with consistent API behaviour.
+
+The [RFC7807](https://tools.ietf.org/html/rfc7807) of the Internet Engineering Task Force ([IETF](https://www.ietf.org/)) defines a standard format for the "problem detail" as a way to carry machine-readable details of errors in an HTTP response to avoid the need to define new error response formats for HTTP APIs. From my perspective, the issues of RFC7807 are that it is too generic (even for many common error cases such as validation errors) and doesn’t contain much useful information for the API consumers.
+
+The [Consistent API Response Errors](https://www.nuget.org/packages/ConsistentApiResponseErrors/) (CARE) is an open-source [NuGet library](https://www.nuget.org/packages/ConsistentApiResponseErrors/), which centralizes the error handling (of validation errors, application exceptions and unhandled exceptions), returns consistent and useful error information and, simplifies our API controllers. In this article, we have seen the CARE library’s logic, the response error formats and instructions to use the related NuGet library.
+
+As future work, I am thinking to adapt the proposed format as extensions in the RFC7807. In this way, we will use the RFC7807 and still benefit from the advantages of the CARE project.
+
+So, if you care about your API consumers, you want maintainable, usable, clean and predictable APIs, use the CARE library …and don’t forget that it's open-source. So, any help, suggestions, a GitHub Star, etc., are welcome.
