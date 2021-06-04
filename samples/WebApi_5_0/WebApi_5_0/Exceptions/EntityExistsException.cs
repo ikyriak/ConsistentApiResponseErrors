@@ -1,7 +1,7 @@
 ﻿using System;
 using ConsistentApiResponseErrors.Exceptions;
 
-namespace WebApi_3_1.Exceptions
+namespace WebApi_5_0.Exceptions
 {
     [Serializable]
     public class EntityExistsException : ApiBaseException
