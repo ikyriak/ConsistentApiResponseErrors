@@ -5,11 +5,11 @@
 Designing APIs is an important and complex process with many decisions involved that organizes and hides the complexity of software [[.NET Nakama (2020, August)](https://www.dotnetnakama.com/blog/what-is-an-api/#api-design)]. Τhis is accomplished by applying the principle of [information hiding](https://en.wikipedia.org/wiki/Information_hiding), which is the process of hiding the complexity of a piece of software (that is most likely to change) into modules of functionality. This will protect other parts of the software from extensive modifications. The following two important practices (among others) can be followed when designing Web APIs:
 
 - Make its users (i.e. API consumers) and us happy. We have to understand the challenges of the API consumers (e.g. their limitations, specific needs, etc.) and try to help them by providing a user-friendly API.
-- Design APIs with consistent behaviour (e.g. consistent use of the HTTP verbs in REST, consistent Error Handling with useful information, etc.).
+- Design APIs with consistent behavior (e.g. consistent use of the HTTP verbs in REST, consistent Error Handling with useful information, etc.).
 
- APIs with consistent behaviour can simplify the API consumers’ implementation and make them happy for using our APIs. Using the HTTP error statuses (such as 4xx Client Errors and 5xx Server Errors) is a good start, but sometimes this is not sufficient to describe the different Web APIs errors. So, additional data that contains information about the problem details are needed (such as, an error-code, the data field that produced the error, etc.).
+ APIs with consistent behavior can simplify the consumers implementation and make them happy for using our APIs. Using the HTTP error statuses (such as 4xx Client Errors and 5xx Server Errors) is a good start, but sometimes this is not sufficient to describe the different Web APIs errors. So, additional data that contains information about the problem details are needed (such as, an error-code, the data field that produced the error, etc.).
 
-Let’s have a minute and think if we, as API designers, are really trying to understand our API consumer’s needs regarding error responses? They may be using different libraries or programming languages (they may even use JavaScript 😛). Also, let’s think about what we, as API consumers, would like from an API regarding error responses. What would make us happy?
+Let’s have a minute and think if we, as API designers, are really trying to understand our API consumer’s needs regarding error responses. They may be using different libraries or programming languages (they may even use JavaScript 😛). Also, let’s think about what we, as API consumers, would like from an API regarding error responses. What would make us happy?
 
 For me, consistent and structured response-bodies on errors would make me happy because I could build and maintain usable and predictable APIs and consumers. For that reason, I started an effort to create the Consistent API Response Errors (CARE) open-source NuGet library, which handles all errors and provide consistent error responses by using an alternative "problem detail" definition with useful information.
 
@@ -103,7 +103,7 @@ Content-Language: en
 
 ## Consistent API Response Errors (CARE)
 
-The RFC7807 provides a very good definition of the problem details, and by using `extensions` it can be adapted for different API consumer’s needs. It is created to avoid the need of defining new error response formats for HTTP APIs. From my perspective, the issues of RFC7807 are that it is too generic (even for many common error cases such as validation errors) and doesn’t contain much useful information for the API consumers.
+The RFC7807 provides a very good definition of the problem details and by using `extensions` it can be adapted for different API consumer’s needs. It is created to avoid the need of defining new error response formats for HTTP APIs. From my perspective, the issues of RFC7807 are that it is too generic (even for many common error cases such as validation errors) and doesn’t contain much useful information for the API consumers.
 
 The [Consistent API Response Errors](https://www.nuget.org/packages/ConsistentApiResponseErrors/) (CARE), which is inspired from the RFC7807, is an effort to provide even more standardized problem details responses (for example, for validation errors) by creating an open-source NuGet library to:
 
@@ -325,7 +325,7 @@ In this section, we will see how to configure our API to let the CARE library ha
 
 #### Step 1: Create Fluent-Validators for All Request DTOs
 
-Let’s assume that we have the following request DTO (WeatherForecastRequest) with three properties: Date, Temperature in Celsius and a Summary. We can create a FluentValidator (e.g. WeatherForecastRequestValidator) in which we will add validators for the properties of the WeatherForecastRequest DTO class. For more information about fluent validators’ creation, you can visit the project's [website](https://docs.fluentvalidation.net/en/latest/start.html#creating-your-first-validator).
+Let’s assume that we have the following request DTO (WeatherForecastRequest) with three properties: Date, Temperature in Celsius and a Summary. We can create a FluentValidator (e.g. WeatherForecastRequestValidator) in which we will add validators for the properties of the WeatherForecastRequest DTO class. For more information about fluent validator creation, you can visit the project's [website](https://docs.fluentvalidation.net/en/latest/start.html#creating-your-first-validator).
 
 ``` c#
 public class WeatherForecastRequest
@@ -394,7 +394,7 @@ public void ConfigureServices(IServiceCollection services)
     })
     .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<WeatherForecastRequestValidator>());
 
-    // Configure the default API behaviour by setting up the MVC application to suppress
+    // Configure the default API behavior by setting up the MVC application to suppress
     // validation filters in order to be handled by the `ConsistentApiResponseErrors.Filters.ValidateModelStateAttribute`
     services.Configure<ApiBehaviorOptions>(options =>
     {
@@ -406,7 +406,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ## Summary
 
-Consistent and structured response bodies on errors are crucial when building maintainable, usable and predictable APIs. When building an API, it’s important to understand the challenges of the API consumers and try to help them with consistent API behaviour.
+Consistent and structured response bodies on errors are crucial when building maintainable, usable and predictable APIs. When building an API, it’s important to understand the challenges of the API consumers and try to help them with consistent API behavior.
 
 The [RFC7807](https://tools.ietf.org/html/rfc7807) of the Internet Engineering Task Force ([IETF](https://www.ietf.org/)) defines a standard format for the "problem detail" as a way to carry machine-readable details of errors in an HTTP response to avoid the need to define new error response formats for HTTP APIs. From my perspective, the issues of RFC7807 are that it is too generic (even for many common error cases such as validation errors) and doesn’t contain much useful information for the API consumers.
 
@@ -414,4 +414,4 @@ The [Consistent API Response Errors](https://www.nuget.org/packages/ConsistentAp
 
 As future work, I am thinking to adapt the proposed format as extensions in the RFC7807. In this way, we will use the RFC7807 and still benefit from the advantages of the CARE project.
 
-So, if you care about your API consumers, you want maintainable, usable, clean and predictable APIs, use the CARE library …and don’t forget that it's open-source. So, any help, suggestions, a GitHub Star, etc., are welcome.
+So, if you care about your API consumers, you want maintainable, usable, clean and predictable APIs, use the CARE library …and don’t forget that it is open-source. So, any help, suggestions, a GitHub Star, etc., are welcome.
