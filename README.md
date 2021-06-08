@@ -415,3 +415,6 @@ The [Consistent API Response Errors](https://www.nuget.org/packages/ConsistentAp
 As future work, I am thinking to adapt the proposed format as extensions in the RFC7807. In this way, we will use the RFC7807 and still benefit from the advantages of the CARE project.
 
 So, if you care about your API consumers, you want maintainable, usable, clean and predictable APIs, use the CARE library …and don’t forget that it is open-source. So, any help, suggestions, a GitHub Star, etc., are welcome.
+
+## License
+The Consistent API Response Errors (CARE) is [MIT licensed](./LICENSE.md).
