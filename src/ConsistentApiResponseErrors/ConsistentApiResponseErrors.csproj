@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;</TargetFrameworks>
     <Authors>Ioannis Kyriakidis</Authors>
     <Company>ikyriakidis.com</Company>
-    <Version>0.2.1-beta</Version>
+    <Version>0.3.0-beta</Version>
     <Description>Consistent API Response Errors (CARE) is an ASP.NET Core middleware that centralizes the handling of input-validation errors, application exceptions and unhandled exceptions. Simplifies the API controllers by containing only the calls for the appropriate business-login service (without the need of input-validators and try-catch).</Description>
     <PackageTags>consistent;structured;centralized;api response;validation errors;application errors;unhandled exceptions;asp.net core</PackageTags>
     <RepositoryUrl>https://github.com/ikyriak/ConsistentApiResponseErrors.git</RepositoryUrl>
@@ -13,16 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation.AspNetCore" Version="8.6.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
-	<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ConsistentApiResponseErrors.Errors\ConsistentApiResponseErrors.Errors.csproj" />
   </ItemGroup>
-
-
 
 </Project>
