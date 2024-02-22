@@ -34,7 +34,7 @@ namespace ConsistentApiResponseErrors.Filters
         }
 
         /// <summary>
-        /// Validates Model automatically 
+        /// Validates Model automatically
         /// </summary>
         /// <param name="context"></param>
         /// <inheritdoc />
@@ -82,7 +82,8 @@ namespace ConsistentApiResponseErrors.Filters
                         continue;
                     }
 
-                    ValidationResult result = validator.Validate(ActionArgument.Value);
+                    ValidationContext<object> validationContext = new(ActionArgument.Value);
+                    ValidationResult result = validator.Validate(validationContext);
                     if (!result.IsValid)
                     {
                         allErrors.AddRange(result.Errors);
